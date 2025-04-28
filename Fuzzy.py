@@ -4,53 +4,57 @@
 
 # Fungsi Membership Function untuk Servis
 def servis_buruk(x):
-    if x <= 40:
+    if x <= 50:
         return 1
-    elif 40 < x < 60:
-        return (60 - x) / 20
+    elif 50 < x < 70:
+        return (70 - x) / 20
     else:
         return 0
 
 def servis_biasa(x):
-    if 40 < x < 60:
-        return (x - 40) / 20
-    elif 60 <= x <= 80:
-        return (80 - x) / 20
+    if 50 < x < 70:
+        return (x - 50) / 20
+    elif 70 <= x <= 90:
+        return (90 - x) / 20
     else:
         return 0
 
 def servis_bagus(x):
-    if x <= 60:
+    if x <= 70:
         return 0
-    elif 60 < x < 80:
-        return (x - 60) / 20
+    elif 70 < x < 90:
+        return (x - 70) / 20
+    elif 90 <= x <= 100:
+        return 1  # Keanggotaan penuh pada 100
     else:
-        return 1
+        return 0
 
 # Fungsi Membership Function untuk Harga
+# Fungsi Membership Function untuk Harga
 def harga_murah(x):
-    if x <= 30000:
+    if x <= 25000:  # Rentang harga murah tetap 25000
         return 1
-    elif 30000 < x < 40000:
-        return (40000 - x) / 10000
+    elif 25000 < x < 35000:
+        return (35000 - x) / 10000  # Rentang harga lebih fleksibel hingga 35.000
     else:
         return 0
 
 def harga_sedang(x):
-    if 30000 < x < 40000:
-        return (x - 30000) / 10000
-    elif 40000 <= x <= 50000:
+    if 35000 <= x < 45000:
+        return (x - 35000) / 10000
+    elif 45000 <= x <= 50000:
         return (50000 - x) / 10000
     else:
         return 0
 
 def harga_mahal(x):
-    if x <= 40000:
-        return 0
-    elif 40000 < x < 50000:
-        return (x - 40000) / 10000
-    else:
+    if x > 50000:
         return 1
+    elif 45000 < x <= 50000:
+        return (x - 45000) / 5000
+    else:
+        return 0
+
 
 # Fuzzy Inference (aturan logika fuzzy)
 def inferensi(mu_servis, mu_harga):
@@ -108,7 +112,7 @@ def main():
 
     # Membaca file restoran.csv
     try:
-        file = open('restoran.csv', 'r')
+        file = open('E:\\Python\\Fuzzy\\restoran.csv', 'r')
         lines = file.readlines()
         file.close()
     except:
@@ -140,6 +144,10 @@ def main():
             harga = float(kolom[2].strip())
         except:
             continue
+
+        # Mengecek apakah harga berada dalam rentang yang diinginkan (25.000 - 55.000)
+        if harga < 25000 or harga > 55000:
+            continue  # Lewatkan data yang tidak sesuai rentang harga
 
         print(f"{id_restoran:<15}{kualitas_servis:<20}{harga:<15}")
 
