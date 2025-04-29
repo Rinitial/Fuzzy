@@ -117,7 +117,7 @@ def main():
     restoran = []
 
     try:
-        file = open('E:\\Python\\Fuzzy\\restoran.csv', 'r')
+        file = open('restoran.csv', 'r')
         lines = file.readlines()
         file.close()
     except:
