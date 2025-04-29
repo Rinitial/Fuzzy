@@ -1,82 +1,81 @@
-# Program Sistem Pemilihan Restoran Terbaik berbasis Fuzzy Logic
-# Dibuat sesuai ketentuan tugas CBR AI 2025
-# Tidak menggunakan library eksternal
-
-# Fungsi Membership Function untuk Servis
 def servis_buruk(x):
-    if x <= 50:
-        return 1
-    elif 50 < x < 70:
-        return (70 - x) / 20
-    else:
+    a, b, c = 0, 25, 50
+    if x <= a or x >= c:
         return 0
+    elif a < x <= b:
+        return (x - a) / (b - a)
+    elif b < x < c:
+        return (c - x) / (c - b)
 
 def servis_biasa(x):
-    if 50 < x < 70:
-        return (x - 50) / 20
-    elif 70 <= x <= 90:
-        return (90 - x) / 20
-    else:
+    a, b, c = 50, 70, 90
+    if x <= a or x >= c:
         return 0
+    elif a < x <= b:
+        return (x - a) / (b - a)
+    elif b < x < c:
+        return (c - x) / (c - b)
 
 def servis_bagus(x):
-    if x <= 70:
+    a, b, c = 70, 85, 100
+    if x <= a or x >= c:
         return 0
-    elif 70 < x < 90:
-        return (x - 70) / 20
-    elif 90 <= x <= 100:
-        return 1  # Keanggotaan penuh pada 100
-    else:
-        return 0
+    elif a < x <= b:
+        return (x - a) / (b - a)
+    elif b < x < c:
+        return (c - x) / (c - b)
 
-# Fungsi Membership Function untuk Harga
-# Fungsi Membership Function untuk Harga
 def harga_murah(x):
-    if x <= 25000:  # Rentang harga murah tetap 25000
-        return 1
-    elif 25000 < x < 35000:
-        return (35000 - x) / 10000  # Rentang harga lebih fleksibel hingga 35.000
-    else:
+    a, b, c = 25000, 30000, 35000
+    if x <= a or x >= c:
         return 0
+    elif a < x <= b:
+        return (x - a) / (b - a)
+    elif b < x < c:
+        return (c - x) / (c - b)
 
 def harga_sedang(x):
-    if 35000 <= x < 45000:
-        return (x - 35000) / 10000
-    elif 45000 <= x <= 50000:
-        return (50000 - x) / 10000
-    else:
+    a, b, c = 35000, 42500, 50000
+    if x <= a or x >= c:
         return 0
+    elif a < x <= b:
+        return (x - a) / (b - a)
+    elif b < x < c:
+        return (c - x) / (c - b)
 
 def harga_mahal(x):
-    if x > 50000:
-        return 1
-    elif 45000 < x <= 50000:
-        return (x - 45000) / 5000
-    else:
+    a, b, c = 45000, 50000, 55000
+    if x <= a or x >= c:
         return 0
+    elif a < x <= b:
+        return (x - a) / (b - a)
+    elif b < x < c:
+        return (c - x) / (c - b)
 
 
 # Fuzzy Inference (aturan logika fuzzy)
-def inferensi(mu_servis, mu_harga):
+def inferensi(n_service, n_harga):
     rules = []
-    rules.append((min(mu_servis["Bagus"], mu_harga["Murah"]), 100))
-    rules.append((min(mu_servis["Bagus"], mu_harga["Sedang"]), 80))
-    rules.append((min(mu_servis["Bagus"], mu_harga["Mahal"]), 60))
-    rules.append((min(mu_servis["Biasa"], mu_harga["Murah"]), 80))
-    rules.append((min(mu_servis["Biasa"], mu_harga["Sedang"]), 60))
-    rules.append((min(mu_servis["Biasa"], mu_harga["Mahal"]), 40))
-    rules.append((mu_servis["Buruk"], 20))  # Semua kondisi buruk
+    rules.append((min(n_service["Bagus"], n_harga["Murah"]), 100))
+    rules.append((min(n_service["Bagus"], n_harga["Sedang"]), 80))
+    rules.append((min(n_service["Bagus"], n_harga["Mahal"]), 60))
+    rules.append((min(n_service["Biasa"], n_harga["Murah"]), 80))
+    rules.append((min(n_service["Biasa"], n_harga["Sedang"]), 60))
+    rules.append((min(n_service["Biasa"], n_harga["Mahal"]), 40))
+    rules.append((min(n_service["Buruk"],n_harga["Murah"]), 40)) 
+    rules.append((min(n_service["Buruk"],n_harga["Sedang"]), 20))  
+    rules.append((min(n_service["Buruk"],n_harga["Mahal"]), 0))  
     return rules
 
-# Defuzzifikasi (menghitung nilai crisp dari aturan fuzzy)
+# Defuzzifikasi 
 def defuzzifikasi(rules):
     pembilang = 0
     penyebut = 0
-    for item in rules:
-        mu = item[0]
-        skor = item[1]
-        pembilang += (mu * skor)
-        penyebut += mu
+    for i in rules:
+        n_anggota = i[0]
+        skor = i[1]
+        pembilang += (n_anggota * skor)
+        penyebut += n_anggota
     if penyebut == 0:
         return 0
     else:
@@ -184,13 +183,13 @@ def main():
 
     # Menampilkan 5 restoran terbaik
     print(f"\n{'ID Restoran':<15}{'Kualitas Servis':<20}{'Harga':<15}{'Skor':<10}")
-    print("-" * 70)
+    print("-" * 55)
     for resto in restoran_terurut[:5]:
         print(f"{resto['ID Restoran']:<15}{resto['Kualitas Servis']:<20}{resto['Harga']:<15}{resto['Skor']:<10}")
 
     # Simpan hasil ke file peringkat.csv
     simpan_ke_csv(restoran_terurut)
 
-# Jalankan program
+
 if __name__ == "__main__":
     main()
