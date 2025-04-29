@@ -1,3 +1,4 @@
+# Fungsi keanggotaan fuzzy untuk servis
 def servis_buruk(x):
     a, b, c = 0, 25, 50
     if x <= a or x >= c:
@@ -25,6 +26,7 @@ def servis_bagus(x):
     elif b < x < c:
         return (c - x) / (c - b)
 
+# Fungsi keanggotaan fuzzy untuk harga
 def harga_murah(x):
     a, b, c = 25000, 30000, 35000
     if x <= a or x >= c:
@@ -52,34 +54,40 @@ def harga_mahal(x):
     elif b < x < c:
         return (c - x) / (c - b)
 
+# Nilai skala linguistik (poin no. 5)
+nilai_skala = {
+    'sangat_rendah': 20,
+    'rendah': 40,
+    'sedang': 60,
+    'tinggi': 80,
+    'sangat_tinggi': 100
+}
 
-# Fuzzy Inference (aturan logika fuzzy)
-def inferensi(n_service, n_harga):
+# Inferensi dengan label linguistik
+def inferensi_label(mu_servis, mu_harga):
     rules = []
-    rules.append((min(n_service["Bagus"], n_harga["Murah"]), 100))
-    rules.append((min(n_service["Bagus"], n_harga["Sedang"]), 80))
-    rules.append((min(n_service["Bagus"], n_harga["Mahal"]), 60))
-    rules.append((min(n_service["Biasa"], n_harga["Murah"]), 80))
-    rules.append((min(n_service["Biasa"], n_harga["Sedang"]), 60))
-    rules.append((min(n_service["Biasa"], n_harga["Mahal"]), 40))
-    rules.append((min(n_service["Buruk"],n_harga["Murah"]), 40)) 
-    rules.append((min(n_service["Buruk"],n_harga["Sedang"]), 20))  
-    rules.append((min(n_service["Buruk"],n_harga["Mahal"]), 0))  
+    rules.append((min(mu_servis["Bagus"], mu_harga["Murah"]), "sangat_tinggi"))
+    rules.append((min(mu_servis["Bagus"], mu_harga["Sedang"]), "tinggi"))
+    rules.append((min(mu_servis["Bagus"], mu_harga["Mahal"]), "sedang"))
+    rules.append((min(mu_servis["Biasa"], mu_harga["Murah"]), "tinggi"))
+    rules.append((min(mu_servis["Biasa"], mu_harga["Sedang"]), "sedang"))
+    rules.append((min(mu_servis["Biasa"], mu_harga["Mahal"]), "rendah"))
+    rules.append((min(mu_servis["Buruk"], mu_harga["Murah"]), "sedang"))
+    rules.append((min(mu_servis["Buruk"], mu_harga["Sedang"]), "rendah"))
+    rules.append((min(mu_servis["Buruk"], mu_harga["Mahal"]), "sangat_rendah"))
     return rules
 
-# Defuzzifikasi 
-def defuzzifikasi(rules):
-    pembilang = 0
-    penyebut = 0
-    for i in rules:
-        n_anggota = i[0]
-        skor = i[1]
-        pembilang += (n_anggota * skor)
-        penyebut += n_anggota
+# Defuzzifikasi menggunakan skala linguistik
+def defuzzifikasi_linguistik(rules):
+    pembilang = 0.0
+    penyebut = 0.0
+    for derajat, label in rules:
+        nilai = nilai_skala.get(label, 0)
+        pembilang += derajat * nilai
+        penyebut += derajat
     if penyebut == 0:
         return 0
-    else:
-        return pembilang / penyebut
+    return pembilang / penyebut
 
 # Selection Sort untuk mengurutkan data berdasarkan skor (Descending)
 def selection_sort(data):
@@ -92,24 +100,22 @@ def selection_sort(data):
         data[i], data[max_idx] = data[max_idx], data[i]
     return data
 
-# Menyimpan hasil ke file CSV
+# Simpan ke CSV
 def simpan_ke_csv(restoran_terurut):
     try:
         file = open('peringkat.csv', 'w')
         file.write("ID Restoran,Kualitas Servis,Harga,Skor\n")
         for resto in restoran_terurut[:5]:
-            line = f"{resto['ID Restoran']},{resto['Kualitas Servis']},{resto['Harga']},{resto['Skor']}\n"
-            file.write(line)
+            file.write(f"{resto['ID Restoran']},{resto['Kualitas Servis']},{resto['Harga']},{resto['Skor']}\n")
         file.close()
-        print("\nFile peringkat.csv berhasil dibuat!")
+        print("\nFile peringkat.csv berhasil disimpan.")
     except:
         print("\nGagal menyimpan file peringkat.csv.")
 
-# Fungsi utama program
+# Fungsi utama
 def main():
     restoran = []
 
-    # Membaca file restoran.csv
     try:
         file = open('E:\\Python\\Fuzzy\\restoran.csv', 'r')
         lines = file.readlines()
@@ -118,7 +124,6 @@ def main():
         print("File restoran.csv tidak ditemukan.")
         return
 
-    # Menampilkan data yang dibaca
     print(f"\n{'ID Restoran':<15}{'Kualitas Servis':<20}{'Harga':<15}")
     print("-" * 50)
 
@@ -144,13 +149,11 @@ def main():
         except:
             continue
 
-        # Mengecek apakah harga berada dalam rentang yang diinginkan (25.000 - 55.000)
         if harga < 25000 or harga > 55000:
-            continue  # Lewatkan data yang tidak sesuai rentang harga
+            continue
 
         print(f"{id_restoran:<15}{kualitas_servis:<20}{harga:<15}")
 
-        # Fuzzifikasi
         mu_servis = {
             "Buruk": servis_buruk(kualitas_servis),
             "Biasa": servis_biasa(kualitas_servis),
@@ -163,9 +166,8 @@ def main():
             "Mahal": harga_mahal(harga)
         }
 
-        # Inferensi dan Defuzzifikasi
-        rules = inferensi(mu_servis, mu_harga)
-        skor = defuzzifikasi(rules)
+        rules = inferensi_label(mu_servis, mu_harga)
+        skor = defuzzifikasi_linguistik(rules)
 
         restoran.append({
             "ID Restoran": id_restoran,
@@ -178,18 +180,14 @@ def main():
         print("Tidak ada data valid yang diproses.")
         return
 
-    # Sorting restoran berdasarkan skor tertinggi
     restoran_terurut = selection_sort(restoran)
 
-    # Menampilkan 5 restoran terbaik
     print(f"\n{'ID Restoran':<15}{'Kualitas Servis':<20}{'Harga':<15}{'Skor':<10}")
-    print("-" * 55)
+    print("-" * 60)
     for resto in restoran_terurut[:5]:
         print(f"{resto['ID Restoran']:<15}{resto['Kualitas Servis']:<20}{resto['Harga']:<15}{resto['Skor']:<10}")
 
-    # Simpan hasil ke file peringkat.csv
     simpan_ke_csv(restoran_terurut)
-
 
 if __name__ == "__main__":
     main()
